@@ -61,18 +61,23 @@ void printMap(std::unordered_map<std::string, std::vector<int>>& invertedList) {
 
 void query(std::unordered_map<std::string, std::vector<int>>& invertedList) {
     std::string queryLine;
+    std::string word;
+    std::vector<int> results;
+
     std::cout << std::endl << "search?> ";
-    std::cin >> queryLine;
+    getline(std::cin, queryLine);
+    std::istringstream line(queryLine);
 
-
-    auto searchIt = invertedList.find(queryLine);
-    if(searchIt != invertedList.end()) {
-        std::cout << std::endl << "matches: " << searchIt->second[0];
-        for(unsigned int i = 1; i < searchIt->second.size(); ++i) {
-            std::cout << ", " << searchIt->second[i];
+    while(line >> word) {
+        auto searchIt = invertedList.find(word);
+        if(searchIt != invertedList.end()) {
+            std::cout << std::endl << "matches for " << word << " : " << searchIt->second[0];
+            for(unsigned int i = 1; i < searchIt->second.size(); ++i) {
+                std::cout << ", " << searchIt->second[i];
+            }
         }
-    }
-    else {
-        std::cout << "No match found";
+        else {
+            std::cout << "No match found";
+        }
     }
 }
