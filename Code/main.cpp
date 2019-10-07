@@ -14,7 +14,10 @@ void query(std::unordered_map<std::string, std::vector<int>>& invertedList);
 int main() {
     std::unordered_map<std::string, std::vector<int>> invertedList;
     openFile("files/bible-washed.txt", invertedList);
-    query(invertedList);
+    //printMap(invertedList);
+    while(true){
+        query(invertedList);
+    }
 }
 
 void openFile(std::string nameFile, std::unordered_map<std::string, std::vector<int>>& invertedList) {
@@ -30,15 +33,9 @@ void openFile(std::string nameFile, std::unordered_map<std::string, std::vector<
         while(getline(file, line)) {
             std::istringstream temp (line);
             while(temp >> word) {
-                if (invertedList[word].empty() || (invertedList[word].back() != lineNum))    { invertedList[word].push_back(lineNum); }
-//                auto it = invertedList.find(word);
-//
-//                if(it != invertedList.end() && it->second.back() != lineNum) {
-//                    it->second.push_back(lineNum);
-//                }
-//                else {
-//                    invertedList.insert({word, {lineNum}});
-//                }
+                auto it = invertedList.find(word);
+                if   (it != invertedList.end() && it->second.back() != lineNum) { it->second.push_back(lineNum); }
+                else { invertedList.insert({word, {lineNum}}); }
             }
             lineNum++;
         }
@@ -63,6 +60,7 @@ void query(std::unordered_map<std::string, std::vector<int>>& invertedList) {
     std::string queryLine;
     std::string word;
     std::vector<int> results;
+    std::unordered_map<std::string, std::vector<int>> invertedListSearch;
 
     std::cout << std::endl << "search?> ";
     getline(std::cin, queryLine);
@@ -75,9 +73,42 @@ void query(std::unordered_map<std::string, std::vector<int>>& invertedList) {
             for(unsigned int i = 1; i < searchIt->second.size(); ++i) {
                 std::cout << ", " << searchIt->second[i];
             }
+            invertedListSearch.insert({word, searchIt->second});
         }
         else {
-            std::cout << "No match found";
+            std::cout << word << " : No match found" << std::endl;
+            invertedListSearch.insert({word, {}});
         }
+    }
+
+    std::string wordSmallList;
+    unsigned int smallestList=0;
+
+    for(auto it = invertedListSearch.begin(); it != invertedListSearch.end(); ++it) {
+        if (it == invertedListSearch.begin()) {
+            wordSmallList = it->first;
+            smallestList = it->second.size();
+        }
+        else if(it->second.size() < smallestList){
+            wordSmallList = it->first;
+            smallestList = it->second.size();
+        }
+    }
+
+    if (smallestList == 0) {
+        std::cout << "No match found" << std::endl;
+    }
+    else {
+        auto searchIt = invertedListSearch.find(wordSmallList);
+        std::cout << std::endl << "matches for " << word << " : " << searchIt->second[0];
+        for(unsigned int i = 1; i < searchIt->second.size(); ++i) {
+            std::cout << ", " << searchIt->second[i];
+        }
+        invertedListSearch.insert({word, searchIt->second});
+    }
+
+
+    for(auto const it : invertedListSearch) {
+        std::cout << it.first << " : " << it.second.size() << std::endl;
     }
 }
