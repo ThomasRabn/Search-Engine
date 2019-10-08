@@ -10,6 +10,7 @@
 void openFile(std::string nameFile, std::unordered_map<std::string, std::vector<int>>& invertedList);
 void printMap(std::unordered_map<std::string, std::vector<int>>& invertedList);
 void query(std::unordered_map<std::string, std::vector<int>>& invertedList);
+int skipTo(std::vector<int>& vec, int index);
 
 int main() {
     std::unordered_map<std::string, std::vector<int>> invertedList;
@@ -25,7 +26,7 @@ void openFile(std::string nameFile, std::unordered_map<std::string, std::vector<
     std::string line, word;
     int lineNum = 1;
 
-    auto t_start = std::chrono::high_resolution_clock::now(); // Store the start time of the sorting algorithm
+    //auto t_start = std::chrono::high_resolution_clock::now(); // Store the start time of the sorting algorithm
 
     if (!file) { std::cout << "Error opening file" << std::endl; return; }
 
@@ -41,9 +42,9 @@ void openFile(std::string nameFile, std::unordered_map<std::string, std::vector<
         }
     }
 
-    auto t_end = std::chrono::high_resolution_clock::now(); // Store the end time
+    //auto t_end = std::chrono::high_resolution_clock::now(); // Store the end time
 
-    std::cout << std::chrono::duration<double, std::milli>(t_end - t_start).count() << " ms long";
+    //std::cout << std::chrono::duration<double, std::milli>(t_end - t_start).count() << " ms long";
 }
 
 void printMap(std::unordered_map<std::string, std::vector<int>>& invertedList) {
@@ -66,17 +67,19 @@ void query(std::unordered_map<std::string, std::vector<int>>& invertedList) {
     getline(std::cin, queryLine);
     std::istringstream line(queryLine);
 
+    auto t_start = std::chrono::high_resolution_clock::now(); // Store the start time of the sorting algorithm
+
     while(line >> word) {
         auto searchIt = invertedList.find(word);
         if(searchIt != invertedList.end()) {
-            std::cout << std::endl << "matches for " << word << " : " << searchIt->second[0];
-            for(unsigned int i = 1; i < searchIt->second.size(); ++i) {
-                std::cout << ", " << searchIt->second[i];
-            }
+//            std::cout << std::endl << "matches for " << word << " : " << searchIt->second[0];
+//            for(unsigned int i = 1; i < searchIt->second.size(); ++i) {
+//                std::cout << ", " << searchIt->second[i];
+//            }
             invertedListSearch.insert({word, searchIt->second});
         }
         else {
-            std::cout << word << " : No match found" << std::endl;
+            //std::cout << word << " : No match found" << std::endl;
             invertedListSearch.insert({word, {}});
         }
     }
@@ -100,15 +103,46 @@ void query(std::unordered_map<std::string, std::vector<int>>& invertedList) {
     }
     else {
         auto searchIt = invertedListSearch.find(wordSmallList);
-        std::cout << std::endl << "matches for " << word << " : " << searchIt->second[0];
-        for(unsigned int i = 1; i < searchIt->second.size(); ++i) {
-            std::cout << ", " << searchIt->second[i];
+        results=searchIt->second;
+        for(auto it = invertedListSearch.begin()++; it != invertedListSearch.end(); ++it) {
+            std::vector<int> resultsTemp;
+            unsigned int i = 0, j = 0;
+            while (i < results.size() && j < it->second.size()) {
+                if(results[i]<it->second[j]) {
+                    i = skipTo(results, it->second[j]);
+                }
+                else {
+                    j = skipTo(it->second, results[i]);
+                }
+                if(results[i] == it->second[j]) {
+                    resultsTemp.push_back(results[i]);
+                    ++i;
+                }
+            }
+            results = resultsTemp;
         }
-        invertedListSearch.insert({word, searchIt->second});
-    }
 
+        if(results.size() == 0) {
+            std::cout << "No match found" << std::endl;
+        }
+        else {
+            std::cout << std::endl << "final matches : " << results[0];
 
-    for(auto const it : invertedListSearch) {
-        std::cout << it.first << " : " << it.second.size() << std::endl;
+            for(unsigned int i = 1; i < results.size(); ++i) {
+                std::cout << ", " << results[i];
+            }
+        }
     }
+    auto t_end = std::chrono::high_resolution_clock::now(); // Store the end time
+
+    std::cout << std::endl << std::chrono::duration<double, std::milli>(t_end - t_start).count() << " ms long";
+}
+
+int skipTo(std::vector<int>& vec, int index) {
+    for(unsigned int i = 0; i < vec.size(); ++i) {
+        if(vec[i] >= index){
+            return i;
+        }
+    }
+    return vec.size();
 }
