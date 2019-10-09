@@ -12,8 +12,6 @@ int skipTo(std::vector<int>& vec, int index, unsigned int start);
 void printMap(std::unordered_map<std::string, std::vector<int>>& invertedList);
 
 
-
-
 int main() {
     /// The unordered map store the word as the key and a vector of ints (representing the line the word is in) as the second element
     std::unordered_map<std::string, std::vector<int>> invertedList;
@@ -119,30 +117,33 @@ void query(std::unordered_map<std::string, std::vector<int>>& invertedList) {
         else if(it->second.size() < smallestList){
             wordSmallList = it->first;
             smallestList = it->second.size();
+            if (smallestList == 0)    break;
         }
     }
 
 
-    /// If their is no word that are in 0 sentence we fill the results vector that store the number of the sentences that match every word
+    /// If there is no word that are in 0 sentence we fill the results vector that store the number of the sentences that match every word
     if(smallestList != 0) {
         auto searchIt = invertedListSearch.find(wordSmallList);
         results=searchIt->second;
-        for(auto it = invertedListSearch.begin()++; it != invertedListSearch.end(); ++it) {
-            std::vector<int> resultsTemp;
-            unsigned int i = 0, j = 0;
-            while (i < results.size() && j < it->second.size()) {
-                if(results[i]<it->second[j]) {
-                    i = skipTo(results, it->second[j], i);
+        for(auto it = invertedListSearch.begin(); it != invertedListSearch.end() && results.size() > 0 ; ++it) {
+            if(it != searchIt) {
+                std::vector<int> resultsTemp;
+                unsigned int i = 0, j = 0;
+                while (i < results.size() && j < it->second.size()) {
+                    if(results[i]<it->second[j]) {
+                        i = skipTo(results, it->second[j], i);
+                    }
+                    else {
+                        j = skipTo(it->second, results[i], j);
+                    }
+                    if(results[i] == it->second[j]) {
+                        resultsTemp.push_back(results[i]);
+                        ++i;
+                    }
                 }
-                else {
-                    j = skipTo(it->second, results[i], j);
-                }
-                if(results[i] == it->second[j]) {
-                    resultsTemp.push_back(results[i]);
-                    ++i;
-                }
+                results = resultsTemp;
             }
-            results = resultsTemp;
         }
     }
 
