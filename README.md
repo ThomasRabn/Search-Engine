@@ -2,7 +2,7 @@
 
 ## The Project
 
-This repository contains a simple (but mostly optimized) search engine.
+This repository contains a simple (yet mostly optimized) search engine.
 
 ## Author
 
